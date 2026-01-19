@@ -491,6 +491,16 @@ const AdminView = ({ registrations, handleEditClick, handleDelete }) => {
     console.log("👥 AdminView - Total registrations:", registrations.length);
     console.log("👥 AdminView - Registrations data:", registrations);
 
+    const sortByNewestSubmit = (a, b) => {
+        const ca = a.createdAt || '';
+        const cb = b.createdAt || '';
+        if (ca && cb) return cb.localeCompare(ca); // newest first
+        if (cb || ca) return cb ? -1 : 1;
+        const dateCompare = b.date.localeCompare(a.date);
+        if (dateCompare !== 0) return dateCompare;
+        return a.slot.localeCompare(b.slot);
+    };
+
     const filteredRegistrations = registrations.filter(item => {
         const matchDate = filterDate ? item.date === filterDate : true;
         const matchSlot = filterSlot ? item.slot === filterSlot : true;
@@ -582,7 +592,7 @@ const AdminView = ({ registrations, handleEditClick, handleDelete }) => {
                 {filteredRegistrations.length === 0 ? (
                     <div className="text-center py-12 text-slate-400 text-sm italic">No bookings found matching filters</div>
                 ) : (
-                    filteredRegistrations.sort((a, b) => a.date.localeCompare(b.date) || a.slot.localeCompare(b.slot)).map(item => (
+                    filteredRegistrations.sort(sortByNewestSubmit).map(item => (
                         <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 animate-fadeIn">
                             <div className="flex justify-between items-start mb-3">
                                 <div>
@@ -618,7 +628,7 @@ const AdminView = ({ registrations, handleEditClick, handleDelete }) => {
                     {filteredRegistrations.length === 0 ? (
                         <tr><td colSpan={4} className="py-12 text-center text-slate-400 font-medium italic">No active bookings found matching filters</td></tr>
                     ) : (
-                        filteredRegistrations.sort((a, b) => a.date.localeCompare(b.date) || a.slot.localeCompare(b.slot)).map((item) => (
+                        filteredRegistrations.sort(sortByNewestSubmit).map((item) => (
                             <tr key={item.id} className="border-t border-slate-50 hover:bg-slate-50/80 transition-colors group">
                                 <td className="py-5 px-8">
                                     <div className="text-slate-900 font-bold">{item.date}</div>
