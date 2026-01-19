@@ -3,8 +3,59 @@ import ReactDOM from 'react-dom/client'
 import App from './Home.jsx'
 import './index.css'
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+// Error boundary để catch lỗi
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('❌ React Error:', error);
+    console.error('Error Info:', errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+          <h1 style={{ color: 'red' }}>⚠️ Đã xảy ra lỗi!</h1>
+          <p>Vui lòng mở Developer Console (F12) để xem chi tiết lỗi.</p>
+          <pre style={{ background: '#f5f5f5', padding: '10px', borderRadius: '5px', overflow: 'auto' }}>
+            {this.state.error?.toString()}
+          </pre>
+          <button 
+            onClick={() => window.location.reload()} 
+            style={{ marginTop: '10px', padding: '10px 20px', cursor: 'pointer' }}
+          >
+            Reload Page
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+try {
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
+} catch (error) {
+  console.error('❌ Fatal Error:', error);
+  document.getElementById('root').innerHTML = `
+    <div style="padding: 20px; font-family: sans-serif;">
+      <h1 style="color: red;">⚠️ Lỗi khởi tạo ứng dụng!</h1>
+      <p>Vui lòng mở Developer Console (F12) để xem chi tiết.</p>
+      <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px;">${error.toString()}</pre>
+    </div>
+  `;
+}
