@@ -368,9 +368,14 @@ const CalendarComponent = ({ calendarView, setCalendarView, currentDate, navigat
     );
 };
 
-const BookingForm = ({ formData, handleInputChange, handleSubmit, isEdit, isFull, usersInCurrentSlot, errors = {} }) => {
+const BookingForm = ({ formData, handleInputChange, handleSubmit, isEdit, isFull, usersInCurrentSlot, errors = {}, errorMessage = '' }) => {
     return (
         <form onSubmit={handleSubmit} className="w-full">
+            {errorMessage && (
+                <div className="mb-4 p-4 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm font-semibold">
+                    {errorMessage}
+                </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-1">
                     <InputField
@@ -655,6 +660,7 @@ export default function GymBookingApp() {
     });
 
     const [formErrors, setFormErrors] = useState({});
+    const [formErrorMessage, setFormErrorMessage] = useState('');
 
     const [editingId, setEditingId] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -840,6 +846,9 @@ export default function GymBookingApp() {
                 return newErrors;
             });
         }
+        if (formErrorMessage) {
+            setFormErrorMessage('');
+        }
     };
 
     // Load saved draft on mount
@@ -866,6 +875,7 @@ export default function GymBookingApp() {
 
         // Clear previous errors
         setFormErrors({});
+        setFormErrorMessage('');
 
         // Validation Check - Collect all missing required fields
         const errors = {};
@@ -896,7 +906,7 @@ export default function GymBookingApp() {
             if (errors.date) missingFields.push('Ngày');
             if (errors.slot) missingFields.push('Khung giờ');
             
-            alert(`⚠️ Vui lòng điền đầy đủ thông tin bắt buộc:\n\n${missingFields.map(field => `• ${field}`).join('\n')}\n\nCác trường có dấu * là bắt buộc.`);
+            setFormErrorMessage(`Vui lòng điền đầy đủ: ${missingFields.join(', ')} (các trường có dấu * là bắt buộc).`);
             
             // Scroll to first error field
             const firstErrorField = document.querySelector('[name="' + Object.keys(errors)[0] + '"]');
@@ -945,6 +955,7 @@ export default function GymBookingApp() {
             });
             // Clear errors on successful submit
             setFormErrors({});
+            setFormErrorMessage('');
         } catch (error) {
             console.error('❌ Error saving booking:', error);
             console.error('Error code:', error.code);
@@ -1061,6 +1072,7 @@ export default function GymBookingApp() {
                                     isFull={isFull}
                                     usersInCurrentSlot={usersInCurrentSlot}
                                     errors={formErrors}
+                                    errorMessage={formErrorMessage}
                                 />
                             </div>
                         </div>
@@ -1106,6 +1118,7 @@ export default function GymBookingApp() {
                     isFull={false} // Editing mode doesn't block submit on full (except logic handled in submit)
                     usersInCurrentSlot={usersInCurrentSlot}
                     errors={formErrors}
+                    errorMessage={formErrorMessage}
                 />
             </Modal>
 
