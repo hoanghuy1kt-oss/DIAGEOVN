@@ -3,7 +3,7 @@ const CACHE_NAME = 'diageo-pwa-v1';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/johnnie-walker-logo.png',
+  '/Logo JW.jpg',
   '/manifest.json'
 ];
 
