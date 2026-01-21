@@ -1,5 +1,5 @@
 // Service Worker for Fitness PWA
-const CACHE_NAME = 'fitness-pwa-v1';
+const CACHE_NAME = 'fitness-pwa-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -36,9 +36,11 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
+    }).then(() => {
+      // Force claim all clients immediately
+      return self.clients.claim();
     })
   );
-  return self.clients.claim();
 });
 
 // Fetch event

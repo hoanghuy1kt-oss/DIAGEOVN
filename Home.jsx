@@ -688,7 +688,10 @@ export default function GymBookingApp() {
         // Kiểm tra db có tồn tại không
         if (!db) {
             console.error("❌ Firestore database không được khởi tạo!");
-            alert("⚠️ Lỗi kết nối Firebase!\n\nVui lòng kiểm tra:\n1. File .env có đầy đủ biến\n2. Firebase config đúng\n3. Restart dev server sau khi sửa .env");
+            // Không hiển thị alert trên mobile để tránh làm gián đoạn
+            if (window.innerWidth > 768) {
+                alert("⚠️ Lỗi kết nối Firebase!\n\nVui lòng kiểm tra:\n1. File .env có đầy đủ biến\n2. Firebase config đúng\n3. Restart dev server sau khi sửa .env");
+            }
             return;
         }
         
@@ -738,12 +741,14 @@ export default function GymBookingApp() {
                     console.error('Error message:', error.message);
                     console.error('Full error object:', error);
                     
-                    // Chỉ hiển thị alert nếu không phải lỗi permission (để tránh spam)
-                    if (error.code !== 'permission-denied') {
-                        alert(`Lỗi kết nối Data: ${error.message}\n\nVui lòng kiểm tra:\n1. Kết nối internet\n2. Firestore security rules\n3. Firebase configuration`);
-                    } else {
-                        console.error('⚠️ Permission denied - Kiểm tra Firestore Rules!');
-                        alert('⚠️ Lỗi quyền truy cập!\n\nVui lòng kiểm tra Firestore Security Rules:\n- Vào Firebase Console > Firestore > Rules\n- Đảm bảo có: allow read, write: if true;\n- Click "Publish" để lưu');
+                    // Chỉ hiển thị alert trên desktop, không hiển thị trên mobile
+                    if (window.innerWidth > 768) {
+                        if (error.code !== 'permission-denied') {
+                            alert(`Lỗi kết nối Data: ${error.message}\n\nVui lòng kiểm tra:\n1. Kết nối internet\n2. Firestore security rules\n3. Firebase configuration`);
+                        } else {
+                            console.error('⚠️ Permission denied - Kiểm tra Firestore Rules!');
+                            alert('⚠️ Lỗi quyền truy cập!\n\nVui lòng kiểm tra Firestore Security Rules:\n- Vào Firebase Console > Firestore > Rules\n- Đảm bảo có: allow read, write: if true;\n- Click "Publish" để lưu');
+                        }
                     }
                 }
             );
@@ -756,14 +761,17 @@ export default function GymBookingApp() {
             };
         } catch (error) {
             console.error('❌ Lỗi khi thiết lập Firestore listener:', error);
-            alert(`Lỗi khởi tạo: ${error.message}`);
+            // Chỉ hiển thị alert trên desktop
+            if (window.innerWidth > 768) {
+                alert(`Lỗi khởi tạo: ${error.message}`);
+            }
         }
     }, []);
 
     // --- PWA SETUP ---
     useEffect(() => {
         // 1. Set Document Title
-        document.title = "Fitness";
+        document.title = " ";
 
         // 2. Register Service Worker
         if ('serviceWorker' in navigator) {

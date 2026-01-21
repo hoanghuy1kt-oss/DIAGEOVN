@@ -21,7 +21,7 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Fitness" />
+    <meta name="apple-mobile-web-app-title" content=" " />
     
     <!-- Microsoft Tiles (Windows) -->
     <meta name="msapplication-TileColor" content="#0F172A" />
@@ -76,6 +76,19 @@
     <div id="root"></div>
     <script type="module" src="/main.jsx"></script>
     <script>
+      // Xóa service worker cũ nếu có để force refresh
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister().then(function(success) {
+              if (success) {
+                console.log('✅ Old service worker unregistered');
+              }
+            });
+          }
+        });
+      }
+      
       // Ẩn loading screen sau khi app đã load
       window.addEventListener('load', function() {
         setTimeout(function() {
@@ -88,6 +101,23 @@
             }, 500);
           }
         }, 500);
+      });
+      
+      // Error handler cho mobile
+      window.addEventListener('error', function(e) {
+        console.error('Global error:', e.error);
+        const root = document.getElementById('root');
+        if (root && !root.innerHTML.trim()) {
+          root.innerHTML = `
+            <div style="padding: 20px; font-family: sans-serif; text-align: center;">
+              <h1 style="color: red;">⚠️ Lỗi tải ứng dụng</h1>
+              <p>Vui lòng thử lại sau hoặc xóa cache và cài đặt lại app.</p>
+              <button onclick="window.location.reload()" style="margin-top: 15px; padding: 10px 20px; cursor: pointer; background-color: #0F172A; color: white; border: none; border-radius: 5px;">
+                Reload
+              </button>
+            </div>
+          `;
+        }
       });
     </script>
   </body>
