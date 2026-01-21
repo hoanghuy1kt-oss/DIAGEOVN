@@ -842,12 +842,24 @@ export default function GymBookingApp() {
             console.log('📱 App is already installed');
         }
 
+        // Mobile detection and install prompt handling
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isAndroid = /Android/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            console.log('📱 Mobile device detected:', { isIOS, isAndroid });
+        }
+
         // Debug: Log PWA readiness
         setTimeout(() => {
             console.log('🔍 PWA Status Check:');
             console.log('- Service Worker:', 'serviceWorker' in navigator);
             console.log('- Manifest:', document.querySelector('link[rel="manifest"]')?.href);
             console.log('- Deferred Prompt:', deferredPrompt ? 'Available' : 'Not available');
+            console.log('- Is Mobile:', isMobile);
+            console.log('- Is iOS:', isIOS);
+            console.log('- Is Android:', isAndroid);
         }, 2000);
 
         return () => {

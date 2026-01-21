@@ -1,14 +1,38 @@
 {
   "name": "Diageo Gym Booking",
   "short_name": "Diageo",
-  "description": "Diageo Gym Booking System",
+  "description": "Diageo Gym Booking System - Book your gym sessions",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F8FAFC",
   "theme_color": "#0F172A",
-  "orientation": "any",
+  "orientation": "portrait-primary",
   "scope": "/",
   "icons": [
+    {
+      "src": "/Logo.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "/Logo.ico",
+      "sizes": "72x72",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "/Logo.ico",
+      "sizes": "96x96",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "/Logo.ico",
+      "sizes": "144x144",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
     {
       "src": "/Logo.ico",
       "sizes": "192x192",
@@ -20,6 +44,22 @@
       "sizes": "512x512",
       "type": "image/x-icon",
       "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "fitness", "lifestyle"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Book Session",
+      "short_name": "Book",
+      "description": "Quick book a gym session",
+      "url": "/?action=book",
+      "icons": [
+        {
+          "src": "/Logo.ico",
+          "sizes": "96x96"
+        }
+      ]
     }
   ]
 }
