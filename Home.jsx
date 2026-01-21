@@ -856,22 +856,16 @@ export default function GymBookingApp() {
     }, []);
 
     const handleInstallClick = async () => {
-        console.log('🔘 Install button clicked');
-        console.log('Deferred prompt available:', !!deferredPrompt);
-        
         if (deferredPrompt) {
             try {
-                console.log('📱 Showing install prompt...');
                 // Show the install prompt
                 deferredPrompt.prompt();
                 
                 // Wait for the user to respond
                 const { outcome } = await deferredPrompt.userChoice;
-                console.log(`👤 User choice: ${outcome}`);
                 
                 if (outcome === 'accepted') {
                     console.log('✅ User accepted installation');
-                    alert('App installation started!');
                 } else {
                     console.log('❌ User dismissed installation');
                 }
@@ -880,37 +874,6 @@ export default function GymBookingApp() {
                 setDeferredPrompt(null);
             } catch (error) {
                 console.error('❌ Error showing install prompt:', error);
-                alert(`Installation error: ${error.message}`);
-            }
-        } else {
-            // Check if already installed
-            if (window.matchMedia('(display-mode: standalone)').matches) {
-                alert('App is already installed!');
-                return;
-            }
-            
-            // Check service worker
-            if ('serviceWorker' in navigator) {
-                const registrations = await navigator.serviceWorker.getRegistrations();
-                if (registrations.length === 0) {
-                    alert('Service Worker not registered yet. Please wait a few seconds and try again.');
-                    return;
-                }
-            }
-            
-            // For iOS Safari
-            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-                alert("To install on iOS:\n\n1. Tap the Share button (square with arrow)\n2. Scroll down\n3. Tap 'Add to Home Screen'");
-            } else {
-                // Try manual installation instructions
-                const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-                const isEdge = /Edg/.test(navigator.userAgent);
-                
-                if (isChrome || isEdge) {
-                    alert("Install prompt will appear automatically when ready.\n\nOr manually:\n1. Click the install icon (➕) in the address bar\n2. Or go to Menu (⋮) > Install app");
-                } else {
-                    alert("Install prompt is not available.\n\nPlease ensure:\n- You're using Chrome, Edge, or Safari\n- Service Worker is registered\n- App is served over HTTPS or localhost\n\nTry refreshing the page.");
-                }
             }
         }
     };
