@@ -766,7 +766,29 @@ export default function GymBookingApp() {
         // 1. Set Document Title
         document.title = "Diageo";
 
-        // 2. Inject Meta Tags for PWA
+        // 2. Register Service Worker (unregister old ones first)
+        if ('serviceWorker' in navigator) {
+            // Unregister all existing service workers first
+            navigator.serviceWorker.getRegistrations().then((registrations) => {
+                for (let registration of registrations) {
+                    registration.unregister();
+                    console.log('🗑️ Unregistered old service worker:', registration.scope);
+                }
+                
+                // Register new service worker
+                navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                    .then((registration) => {
+                        console.log('✅ Service Worker registered:', registration.scope);
+                        // Force update
+                        registration.update();
+                    })
+                    .catch((error) => {
+                        console.error('❌ Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        // 3. Inject Meta Tags for PWA
         const metaTags = [
             { name: 'apple-mobile-web-app-capable', content: 'yes' },
             { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
@@ -784,7 +806,7 @@ export default function GymBookingApp() {
             meta.content = tagInfo.content;
         });
 
-        // 3. Handle Install Prompt (Android/Chrome)
+        // 4. Handle Install Prompt (Android/Chrome)
         const handleBeforeInstallPrompt = (e) => {
             console.log('beforeinstallprompt event fired');
             e.preventDefault();
@@ -1062,7 +1084,10 @@ export default function GymBookingApp() {
                     <div className="flex flex-col items-center animate-slideUp">
                         {/* Hero */}
                         <div className="text-center mb-8 md:mb-12 px-2">
-                            <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-3 md:mb-4 tracking-tight leading-tight">GT FITNESS CENTER</h1>
+                            <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-2 md:mb-3 tracking-tight leading-tight">Gym Registration Form</h1>
+                            <p className="text-slate-500 font-medium text-sm md:text-base mb-3 md:mb-4">
+                                at GT Fitness Center
+                            </p>
                             <p className="text-slate-500 font-medium text-xs md:text-sm max-w-lg mx-auto leading-relaxed">
                                 All members in Diageo can use this membership card with maximum access 2 person/time
                             </p>

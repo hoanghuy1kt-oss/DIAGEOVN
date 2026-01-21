@@ -1,16 +1,43 @@
 {
-  "name": "Diageo",
+  "name": "Diageo Gym Booking",
   "short_name": "Diageo",
   "description": "Diageo Gym Booking System",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F8FAFC",
+  "background_color": "#FFFFFF",
   "theme_color": "#0F172A",
   "orientation": "portrait-primary",
+  "scope": "/",
   "icons": [
     {
       "src": "/Logo.ico",
-      "sizes": "any",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/Logo.ico",
+      "sizes": "72x72",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/Logo.ico",
+      "sizes": "96x96",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/Logo.ico",
+      "sizes": "144x144",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/Logo.ico",
+      "sizes": "192x192",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "/Logo.ico",
+      "sizes": "512x512",
       "type": "image/x-icon",
       "purpose": "any maskable"
     }
