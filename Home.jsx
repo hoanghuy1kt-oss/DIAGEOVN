@@ -8,8 +8,7 @@ import {
     deleteDoc,
     doc,
     query,
-    onSnapshot,
-    orderBy
+    onSnapshot
 } from 'firebase/firestore';
 
 // --- CONSTANTS ---

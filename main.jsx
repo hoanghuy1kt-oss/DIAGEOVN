@@ -17,20 +17,32 @@ class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     console.error('❌ React Error:', error);
     console.error('Error Info:', errorInfo);
+    console.error('Error Stack:', error.stack);
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+        <div style={{ padding: '20px', fontFamily: 'sans-serif', maxWidth: '800px', margin: '0 auto' }}>
           <h1 style={{ color: 'red' }}>⚠️ Đã xảy ra lỗi!</h1>
           <p>Vui lòng mở Developer Console (F12) để xem chi tiết lỗi.</p>
-          <pre style={{ background: '#f5f5f5', padding: '10px', borderRadius: '5px', overflow: 'auto' }}>
-            {this.state.error?.toString()}
-          </pre>
+          <div style={{ background: '#f5f5f5', padding: '15px', borderRadius: '5px', overflow: 'auto', marginTop: '10px' }}>
+            <strong>Lỗi:</strong>
+            <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              {this.state.error?.toString()}
+            </pre>
+            {this.state.error?.stack && (
+              <>
+                <strong>Stack Trace:</strong>
+                <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '12px' }}>
+                  {this.state.error.stack}
+                </pre>
+              </>
+            )}
+          </div>
           <button 
             onClick={() => window.location.reload()} 
-            style={{ marginTop: '10px', padding: '10px 20px', cursor: 'pointer' }}
+            style={{ marginTop: '15px', padding: '10px 20px', cursor: 'pointer', backgroundColor: '#0F172A', color: 'white', border: 'none', borderRadius: '5px' }}
           >
             Reload Page
           </button>
