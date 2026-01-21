@@ -766,34 +766,53 @@ export default function GymBookingApp() {
         // 1. Set Document Title
         document.title = "Diageo";
 
-        // 2. Register Service Worker (unregister old ones first)
-        if ('serviceWorker' in navigator) {
-            // Unregister all existing service workers first
-            navigator.serviceWorker.getRegistrations().then((registrations) => {
-                for (let registration of registrations) {
-                    registration.unregister();
-                    console.log('🗑️ Unregistered old service worker:', registration.scope);
-                }
-                
-                // Register new service worker
-                navigator.serviceWorker.register('/sw.js', { scope: '/' })
-                    .then((registration) => {
-                        console.log('✅ Service Worker registered:', registration.scope);
-                        // Force update
-                        registration.update();
-                    })
-                    .catch((error) => {
-                        console.error('❌ Service Worker registration failed:', error);
+        // 2. Register Service Worker
+        const registerServiceWorker = async () => {
+            if ('serviceWorker' in navigator) {
+                try {
+                    // Wait a bit for page to load
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Unregister old service workers
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                        console.log('🗑️ Unregistered old SW:', registration.scope);
+                    }
+                    
+                    // Register new service worker
+                    const registration = await navigator.serviceWorker.register('/sw.js', { 
+                        scope: '/' 
                     });
-            });
-        }
+                    console.log('✅ Service Worker registered:', registration.scope);
+                    
+                    // Wait for service worker to be ready
+                    if (registration.installing) {
+                        console.log('⏳ Service Worker installing...');
+                        registration.installing.addEventListener('statechange', (e) => {
+                            if (e.target.state === 'activated') {
+                                console.log('✅ Service Worker activated!');
+                            }
+                        });
+                    } else if (registration.waiting) {
+                        console.log('⏳ Service Worker waiting...');
+                    } else if (registration.active) {
+                        console.log('✅ Service Worker active!');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Service Worker registration failed:', error);
+                }
+            }
+        };
+
+        registerServiceWorker();
 
         // 3. Inject Meta Tags for PWA
         const metaTags = [
             { name: 'apple-mobile-web-app-capable', content: 'yes' },
             { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
-            { name: 'apple-mobile-web-app-title', content: 'Diageo' },
-            { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0' }
+            { name: 'apple-mobile-web-app-title', content: 'Diageo' }
         ];
 
         metaTags.forEach(tagInfo => {
@@ -806,19 +825,29 @@ export default function GymBookingApp() {
             meta.content = tagInfo.content;
         });
 
-        // 4. Handle Install Prompt (Android/Chrome)
+        // 4. Handle Install Prompt
         const handleBeforeInstallPrompt = (e) => {
-            console.log('beforeinstallprompt event fired');
+            console.log('🎯 beforeinstallprompt event fired!');
             e.preventDefault();
             setDeferredPrompt(e);
+            console.log('✅ Install prompt saved to state');
         };
 
+        // Listen for install prompt (can take a few seconds)
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-        // Check if app is already installed
+        // Check if already installed
         if (window.matchMedia('(display-mode: standalone)').matches) {
-            console.log('App is already installed');
+            console.log('📱 App is already installed');
         }
+
+        // Debug: Log PWA readiness
+        setTimeout(() => {
+            console.log('🔍 PWA Status Check:');
+            console.log('- Service Worker:', 'serviceWorker' in navigator);
+            console.log('- Manifest:', document.querySelector('link[rel="manifest"]')?.href);
+            console.log('- Deferred Prompt:', deferredPrompt ? 'Available' : 'Not available');
+        }, 2000);
 
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -826,28 +855,61 @@ export default function GymBookingApp() {
     }, []);
 
     const handleInstallClick = async () => {
+        console.log('🔘 Install button clicked');
+        console.log('Deferred prompt available:', !!deferredPrompt);
+        
         if (deferredPrompt) {
             try {
+                console.log('📱 Showing install prompt...');
                 // Show the install prompt
                 deferredPrompt.prompt();
-                // Wait for the user to respond to the prompt
+                
+                // Wait for the user to respond
                 const { outcome } = await deferredPrompt.userChoice;
-                console.log(`User response to install prompt: ${outcome}`);
+                console.log(`👤 User choice: ${outcome}`);
+                
                 if (outcome === 'accepted') {
-                    console.log('User accepted the install prompt');
-                    setDeferredPrompt(null);
+                    console.log('✅ User accepted installation');
+                    alert('App installation started!');
                 } else {
-                    console.log('User dismissed the install prompt');
+                    console.log('❌ User dismissed installation');
                 }
+                
+                // Clear the prompt
+                setDeferredPrompt(null);
             } catch (error) {
-                console.error('Error showing install prompt:', error);
+                console.error('❌ Error showing install prompt:', error);
+                alert(`Installation error: ${error.message}`);
             }
         } else {
+            // Check if already installed
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                alert('App is already installed!');
+                return;
+            }
+            
+            // Check service worker
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                if (registrations.length === 0) {
+                    alert('Service Worker not registered yet. Please wait a few seconds and try again.');
+                    return;
+                }
+            }
+            
             // For iOS Safari
             if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-                alert("To install on iOS:\n1. Tap the Share button (square with arrow)\n2. Scroll down and tap 'Add to Home Screen'");
+                alert("To install on iOS:\n\n1. Tap the Share button (square with arrow)\n2. Scroll down\n3. Tap 'Add to Home Screen'");
             } else {
-                alert("Install prompt is not available. The app may already be installed, or your browser doesn't support PWA installation.");
+                // Try manual installation instructions
+                const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+                const isEdge = /Edg/.test(navigator.userAgent);
+                
+                if (isChrome || isEdge) {
+                    alert("Install prompt will appear automatically when ready.\n\nOr manually:\n1. Click the install icon (➕) in the address bar\n2. Or go to Menu (⋮) > Install app");
+                } else {
+                    alert("Install prompt is not available.\n\nPlease ensure:\n- You're using Chrome, Edge, or Safari\n- Service Worker is registered\n- App is served over HTTPS or localhost\n\nTry refreshing the page.");
+                }
             }
         }
     };

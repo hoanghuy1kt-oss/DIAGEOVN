@@ -4,31 +4,11 @@
   "description": "Diageo Gym Booking System",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FFFFFF",
+  "background_color": "#F8FAFC",
   "theme_color": "#0F172A",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "scope": "/",
   "icons": [
-    {
-      "src": "/Logo.ico",
-      "sizes": "48x48",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "/Logo.ico",
-      "sizes": "72x72",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "/Logo.ico",
-      "sizes": "96x96",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "/Logo.ico",
-      "sizes": "144x144",
-      "type": "image/x-icon"
-    },
     {
       "src": "/Logo.ico",
       "sizes": "192x192",
