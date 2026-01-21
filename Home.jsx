@@ -1111,7 +1111,7 @@ export default function GymBookingApp() {
                 <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex justify-between items-center">
                     <div className="flex flex-col cursor-pointer" onClick={() => setActiveTab('booking')}>
                         <div className="bg-white p-2 rounded-lg flex items-center justify-center shadow-sm">
-                            <img src="/Logo JW.jpg" alt="Diageo Logo" className="h-8 md:h-10 w-auto" style={{ backgroundColor: '#ffffff', padding: '4px', borderRadius: '4px' }} />
+                            <img src="/Logo JW.png" alt="Diageo Logo" className="h-8 md:h-10 w-auto" style={{ backgroundColor: '#ffffff', padding: '4px', borderRadius: '4px' }} />
                         </div>
                     </div>
 
