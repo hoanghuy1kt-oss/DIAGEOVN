@@ -810,6 +810,7 @@ export default function GymBookingApp() {
 
         // 3. Inject Meta Tags for PWA
         const metaTags = [
+            { name: 'mobile-web-app-capable', content: 'yes' },
             { name: 'apple-mobile-web-app-capable', content: 'yes' },
             { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
             { name: 'apple-mobile-web-app-title', content: 'Diageo' }

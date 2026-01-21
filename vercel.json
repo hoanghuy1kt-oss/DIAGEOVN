@@ -1,13 +1,7 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "framework": "vite",
-  "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/((?!manifest.json|sw.js|Logo.ico|.*\\.(ico|png|jpg|jpeg|svg|css|js|woff|woff2|ttf|eot|json)).*)",
+      "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
     }
   ],
@@ -18,10 +12,6 @@
         {
           "key": "Content-Type",
           "value": "application/manifest+json; charset=utf-8"
-        },
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
         }
       ]
     },
