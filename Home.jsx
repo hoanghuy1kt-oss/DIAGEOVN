@@ -501,7 +501,7 @@ const BookingForm = ({ formData, handleInputChange, handleSubmit, isEdit, isFull
     );
 };
 
-const AdminView = ({ registrations, handleEditClick, handleDelete }) => {
+const AdminView = ({ registrations, handleEditClick }) => {
     const [filterDate, setFilterDate] = useState('');
     const [filterSlot, setFilterSlot] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
@@ -1242,7 +1242,6 @@ export default function GymBookingApp() {
                     <AdminView
                         registrations={registrations}
                         handleEditClick={handleEditClick}
-                        handleDelete={handleDelete}
                     />
                 )}
             </main>
