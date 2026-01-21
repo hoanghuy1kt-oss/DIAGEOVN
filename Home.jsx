@@ -1026,7 +1026,9 @@ export default function GymBookingApp() {
             <nav className="bg-white border-b border-slate-100">
                 <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex justify-between items-center">
                     <div className="flex flex-col cursor-pointer" onClick={() => setActiveTab('booking')}>
-                        <span className="font-extrabold text-lg md:text-xl tracking-tighter text-slate-900">DIAGEO</span>
+                        <div className="bg-white p-2 rounded-lg flex items-center justify-center">
+                            <img src="/Logo.ico" alt="Diageo Logo" className="h-8 md:h-10 w-auto" />
+                        </div>
                     </div>
 
                     {/* Desktop Nav */}
