@@ -769,14 +769,31 @@ export default function GymBookingApp() {
         // 2. Register Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('/sw.js', { scope: '/' })
                     .then((registration) => {
-                        console.log('Service Worker registered:', registration.scope);
+                        console.log('✅ Service Worker registered:', registration.scope);
+                        console.log('✅ Service Worker state:', registration.active?.state || registration.installing?.state || registration.waiting?.state);
+                        
+                        // Check if service worker is active
+                        if (registration.active) {
+                            console.log('✅ Service Worker is active');
+                        } else if (registration.installing) {
+                            console.log('⏳ Service Worker is installing...');
+                            registration.installing.addEventListener('statechange', () => {
+                                if (registration.installing?.state === 'activated') {
+                                    console.log('✅ Service Worker activated!');
+                                }
+                            });
+                        } else if (registration.waiting) {
+                            console.log('⏳ Service Worker is waiting...');
+                        }
                     })
                     .catch((error) => {
-                        console.error('Service Worker registration failed:', error);
+                        console.error('❌ Service Worker registration failed:', error);
                     });
             });
+        } else {
+            console.warn('⚠️ Service Worker not supported');
         }
 
         // 3. Inject Meta Tags for PWA
@@ -799,17 +816,72 @@ export default function GymBookingApp() {
 
         // 4. Handle Install Prompt (Android/Chrome)
         const handleBeforeInstallPrompt = (e) => {
-            console.log('beforeinstallprompt event fired');
+            console.log('🎯 beforeinstallprompt event fired!');
+            console.log('📋 Prompt platforms:', e.platforms);
             e.preventDefault();
             setDeferredPrompt(e);
+            console.log('✅ Install prompt saved');
         };
 
+        // Listen for install prompt
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        
+        // Also listen for appinstalled event
+        window.addEventListener('appinstalled', () => {
+            console.log('✅ App was installed successfully');
+            setDeferredPrompt(null);
+        });
 
         // Check if app is already installed
         if (window.matchMedia('(display-mode: standalone)').matches) {
-            console.log('App is already installed');
+            console.log('📱 App is already installed');
         }
+        
+        // Note: beforeinstallprompt may not fire on localhost due to browser heuristics
+        // It will work on production (HTTPS) after user engagement
+        console.log('ℹ️ Note: Install prompt requires HTTPS (production) and user engagement');
+
+        // Debug: Check PWA requirements after a delay
+        setTimeout(() => {
+            const isSecureContext = window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            console.log('🔍 PWA Requirements Check:');
+            console.log('- Secure Context:', isSecureContext, '(localhost is considered secure)');
+            console.log('- Protocol:', window.location.protocol);
+            console.log('- Hostname:', window.location.hostname);
+            console.log('- Manifest:', document.querySelector('link[rel="manifest"]')?.href);
+            
+            // Check manifest validity
+            fetch('/manifest.json')
+                .then(res => {
+                    console.log('- Manifest accessible:', res.ok, res.status);
+                    return res.json();
+                })
+                .then(manifest => {
+                    console.log('- Manifest valid:', !!manifest);
+                    console.log('- Manifest display:', manifest.display);
+                    console.log('- Manifest icons count:', manifest.icons?.length || 0);
+                })
+                .catch(err => {
+                    console.error('- Manifest error:', err);
+                });
+            
+            console.log('- Service Worker:', 'serviceWorker' in navigator);
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(regs => {
+                    console.log('- Service Worker registered:', regs.length > 0);
+                    if (regs.length > 0) {
+                        console.log('- Service Worker scope:', regs[0].scope);
+                        console.log('- Service Worker state:', regs[0].active?.state || regs[0].installing?.state || regs[0].waiting?.state);
+                    }
+                });
+            }
+            console.log('- Deferred Prompt:', deferredPrompt ? 'Available ✅' : 'Not available ❌');
+            
+            // Additional checks
+            console.log('- Standalone mode:', window.matchMedia('(display-mode: standalone)').matches);
+            console.log('- User Agent:', navigator.userAgent.includes('Chrome') || navigator.userAgent.includes('Edge'));
+        }, 3000);
 
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
