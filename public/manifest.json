@@ -1,6 +1,6 @@
 {
-  "name": " ",
-  "short_name": " ",
+  "name": "Fitness Booking",
+  "short_name": "Fitness",
   "description": "Fitness Booking System",
   "start_url": "/",
   "display": "standalone",
