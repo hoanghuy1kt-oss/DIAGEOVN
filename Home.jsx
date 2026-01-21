@@ -88,7 +88,7 @@ const InputField = ({ label, name, type = "text", value, onChange, placeholder, 
     </div>
 );
 
-const Modal = ({ isOpen, onClose, title, children }) => {
+const Modal = ({ isOpen, onClose, title, children, onDeleteClick }) => {
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-0 md:p-4 animate-fadeIn">
@@ -97,7 +97,21 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                 <button onClick={onClose} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors p-2 hover:bg-slate-100 rounded-full z-10 hidden md:block">
                     <X size={20} />
                 </button>
-                <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-6 tracking-tight pr-8">{title}</h2>
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight pr-8">{title}</h2>
+                    {onDeleteClick && (
+                        <button 
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onDeleteClick();
+                            }}
+                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                            <Trash2 size={20} />
+                        </button>
+                    )}
+                </div>
                 {children}
                 <div className="mt-6 md:hidden">
                     <Button onClick={onClose} variant="secondary" className="w-full">Close</Button>
@@ -367,7 +381,7 @@ const CalendarComponent = ({ calendarView, setCalendarView, currentDate, navigat
     );
 };
 
-const BookingForm = ({ formData, handleInputChange, handleSubmit, isEdit, isFull, usersInCurrentSlot, errors = {}, errorMessage = '', onDeleteClick }) => {
+const BookingForm = ({ formData, handleInputChange, handleSubmit, isEdit, isFull, usersInCurrentSlot, errors = {}, errorMessage = '' }) => {
     return (
         <form onSubmit={handleSubmit} className="w-full">
             {errorMessage && (
@@ -474,29 +488,9 @@ const BookingForm = ({ formData, handleInputChange, handleSubmit, isEdit, isFull
                 </div>
             </div>
 
-            {isEdit ? (
-                <div className="flex gap-3">
-                    <Button 
-                        type="button"
-                        onClick={onDeleteClick}
-                        variant="danger"
-                        className="flex-1 shadow-lg shadow-red-900/10"
-                    >
-                        <Trash2 size={16} /> Delete
-                    </Button>
-                    <Button 
-                        type="submit"
-                        className="flex-1 shadow-lg shadow-slate-900/20" 
-                        disabled={isFull && !isEdit}
-                    >
-                        Update Booking
-                    </Button>
-                </div>
-            ) : (
-                <Button className="w-full shadow-lg shadow-slate-900/20" disabled={isFull && !isEdit}>
-                    Confirm Booking
-                </Button>
-            )}
+            <Button className="w-full shadow-lg shadow-slate-900/20" disabled={isFull && !isEdit}>
+                {isEdit ? "Update Booking" : "Confirm Booking"}
+            </Button>
         </form>
     );
 };
@@ -1260,6 +1254,7 @@ export default function GymBookingApp() {
                 isOpen={isEditModalOpen}
                 onClose={() => { setIsEditModalOpen(false); setEditingId(null); }}
                 title="Update Booking"
+                onDeleteClick={handleDeleteClick}
             >
                 <BookingForm
                     formData={formData}
@@ -1270,7 +1265,6 @@ export default function GymBookingApp() {
                     usersInCurrentSlot={usersInCurrentSlot}
                     errors={formErrors}
                     errorMessage={formErrorMessage}
-                    onDeleteClick={handleDeleteClick}
                 />
             </Modal>
 
