@@ -767,53 +767,24 @@ export default function GymBookingApp() {
         document.title = "Diageo";
 
         // 2. Register Service Worker
-        const registerServiceWorker = async () => {
-            if ('serviceWorker' in navigator) {
-                try {
-                    // Wait a bit for page to load
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    // Unregister old service workers
-                    const registrations = await navigator.serviceWorker.getRegistrations();
-                    for (let registration of registrations) {
-                        await registration.unregister();
-                        console.log('🗑️ Unregistered old SW:', registration.scope);
-                    }
-                    
-                    // Register new service worker
-                    const registration = await navigator.serviceWorker.register('/sw.js', { 
-                        scope: '/' 
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.error('Service Worker registration failed:', error);
                     });
-                    console.log('✅ Service Worker registered:', registration.scope);
-                    
-                    // Wait for service worker to be ready
-                    if (registration.installing) {
-                        console.log('⏳ Service Worker installing...');
-                        registration.installing.addEventListener('statechange', (e) => {
-                            if (e.target.state === 'activated') {
-                                console.log('✅ Service Worker activated!');
-                            }
-                        });
-                    } else if (registration.waiting) {
-                        console.log('⏳ Service Worker waiting...');
-                    } else if (registration.active) {
-                        console.log('✅ Service Worker active!');
-                    }
-                    
-                } catch (error) {
-                    console.error('❌ Service Worker registration failed:', error);
-                }
-            }
-        };
-
-        registerServiceWorker();
+            });
+        }
 
         // 3. Inject Meta Tags for PWA
         const metaTags = [
-            { name: 'mobile-web-app-capable', content: 'yes' },
             { name: 'apple-mobile-web-app-capable', content: 'yes' },
             { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
-            { name: 'apple-mobile-web-app-title', content: 'Diageo' }
+            { name: 'apple-mobile-web-app-title', content: 'Diageo' },
+            { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0' }
         ];
 
         metaTags.forEach(tagInfo => {
@@ -826,53 +797,19 @@ export default function GymBookingApp() {
             meta.content = tagInfo.content;
         });
 
-        // 4. Handle Install Prompt
+        // 4. Handle Install Prompt (Android/Chrome)
         const handleBeforeInstallPrompt = (e) => {
-            console.log('🎯 beforeinstallprompt event fired!');
+            console.log('beforeinstallprompt event fired');
             e.preventDefault();
             setDeferredPrompt(e);
-            console.log('✅ Install prompt saved to state');
-            
-            // Log prompt details for debugging
-            console.log('📋 Prompt details:', {
-                platforms: e.platforms,
-                userChoice: e.userChoice
-            });
         };
 
-        // Listen for install prompt (can take a few seconds)
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-        
-        // Also listen for appinstalled event
-        window.addEventListener('appinstalled', () => {
-            console.log('✅ App was installed successfully');
-            setDeferredPrompt(null);
-        });
 
-        // Check if already installed
+        // Check if app is already installed
         if (window.matchMedia('(display-mode: standalone)').matches) {
-            console.log('📱 App is already installed');
+            console.log('App is already installed');
         }
-
-        // Mobile detection and install prompt handling
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-        const isAndroid = /Android/i.test(navigator.userAgent);
-
-        if (isMobile) {
-            console.log('📱 Mobile device detected:', { isIOS, isAndroid });
-        }
-
-        // Debug: Log PWA readiness
-        setTimeout(() => {
-            console.log('🔍 PWA Status Check:');
-            console.log('- Service Worker:', 'serviceWorker' in navigator);
-            console.log('- Manifest:', document.querySelector('link[rel="manifest"]')?.href);
-            console.log('- Deferred Prompt:', deferredPrompt ? 'Available' : 'Not available');
-            console.log('- Is Mobile:', isMobile);
-            console.log('- Is iOS:', isIOS);
-            console.log('- Is Android:', isAndroid);
-        }, 2000);
 
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -880,72 +817,28 @@ export default function GymBookingApp() {
     }, []);
 
     const handleInstallClick = async () => {
-        console.log('🔘 Install button clicked');
-        
-        // Check if app is already installed
-        const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
-        if (isInstalled) {
-            console.log('📱 App is already installed');
-            // App đã được cài - có thể reinstall, nhưng không cần làm gì
-            return;
-        }
-        
-        // Wait a bit and check deferredPrompt again (it might have been set)
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
         if (deferredPrompt) {
             try {
-                console.log('📱 Showing install prompt...');
                 // Show the install prompt
                 deferredPrompt.prompt();
-                
-                // Wait for the user to respond
+                // Wait for the user to respond to the prompt
                 const { outcome } = await deferredPrompt.userChoice;
-                console.log(`👤 User choice: ${outcome}`);
-                
+                console.log(`User response to install prompt: ${outcome}`);
                 if (outcome === 'accepted') {
-                    console.log('✅ User accepted installation');
+                    console.log('User accepted the install prompt');
+                    setDeferredPrompt(null);
                 } else {
-                    console.log('❌ User dismissed installation');
+                    console.log('User dismissed the install prompt');
                 }
-                
-                // Clear the prompt after user choice
-                setDeferredPrompt(null);
             } catch (error) {
-                console.error('❌ Error showing install prompt:', error);
-                setDeferredPrompt(null);
+                console.error('Error showing install prompt:', error);
             }
         } else {
-            // Detect platform
-            const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-            const isAndroid = /Android/i.test(navigator.userAgent);
-            const isChrome = /Chrome/i.test(navigator.userAgent) && !/Edge/i.test(navigator.userAgent);
-            const isEdge = /Edg/i.test(navigator.userAgent);
-            
-            // Check service worker status
-            if ('serviceWorker' in navigator) {
-                const registrations = await navigator.serviceWorker.getRegistrations();
-                if (registrations.length === 0) {
-                    console.log('⏳ Service Worker not registered yet');
-                    // On Android, browser will show banner automatically when ready
-                    if (isAndroid && (isChrome || isEdge)) {
-                        return; // Don't show alert, browser will handle it
-                    }
-                }
-            }
-            
-            // On Android Chrome/Edge - browser will show install banner automatically
-            // Don't show alert, just let browser handle it
-            if (isAndroid && (isChrome || isEdge)) {
-                console.log('📱 Android Chrome/Edge - browser will show install banner automatically');
-                // Browser will automatically show install banner when criteria are met
-                // No alert needed
-                return;
-            }
-            
-            // For iOS - show instructions (required)
-            if (isIOS) {
-                alert('Cài đặt trên iOS:\n\n1. Nhấn nút Share (hình vuông với mũi tên lên)\n2. Cuộn xuống\n3. Chọn "Add to Home Screen"\n4. Nhấn "Add"');
+            // For iOS Safari
+            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                alert("To install on iOS:\n1. Tap the Share button (square with arrow)\n2. Scroll down and tap 'Add to Home Screen'");
+            } else {
+                alert("Install prompt is not available. The app may already be installed, or your browser doesn't support PWA installation.");
             }
         }
     };
