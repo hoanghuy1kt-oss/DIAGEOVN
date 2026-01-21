@@ -1091,7 +1091,7 @@ export default function GymBookingApp() {
 
     const handleDeleteConfirm = async () => {
         if (deleteConfirmText.trim().toUpperCase() !== 'OK') {
-            alert('Vui lòng gõ "OK" để xác nhận xóa.');
+            alert('Please type "OK" to confirm deletion.');
             return;
         }
 
@@ -1272,21 +1272,21 @@ export default function GymBookingApp() {
             <Modal
                 isOpen={isDeleteConfirmOpen}
                 onClose={handleDeleteCancel}
-                title="Xác nhận xóa"
+                title="Confirm Delete"
             >
                 <div className="space-y-4">
                     <p className="text-slate-700 font-medium">
-                        Bạn có chắc chắn muốn xóa booking này? Hành động này không thể hoàn tác.
+                        Are you sure you want to delete this booking? This action cannot be undone.
                     </p>
                     <div>
                         <label className="block text-[10px] font-bold uppercase tracking-widest mb-2 ml-1 text-slate-400">
-                            Gõ "OK" để xác nhận xóa
+                            Type "OK" to confirm deletion
                         </label>
                         <input
                             type="text"
                             value={deleteConfirmText}
                             onChange={(e) => setDeleteConfirmText(e.target.value)}
-                            placeholder="Gõ OK..."
+                            placeholder="Type OK..."
                             className="w-full bg-slate-50 border border-slate-200 text-slate-800 p-4 font-medium text-base focus:outline-none focus:bg-white focus:ring-1 focus:border-red-500 focus:ring-red-500 transition-all rounded-xl"
                             autoFocus
                         />
@@ -1298,7 +1298,7 @@ export default function GymBookingApp() {
                             variant="secondary"
                             className="flex-1"
                         >
-                            Hủy
+                            Cancel
                         </Button>
                         <Button
                             type="button"
@@ -1307,7 +1307,7 @@ export default function GymBookingApp() {
                             className="flex-1"
                             disabled={deleteConfirmText.trim().toUpperCase() !== 'OK'}
                         >
-                            <Trash2 size={16} /> Xóa
+                            <Trash2 size={16} /> Delete
                         </Button>
                     </div>
                 </div>
