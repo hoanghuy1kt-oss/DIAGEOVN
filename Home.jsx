@@ -367,7 +367,7 @@ const CalendarComponent = ({ calendarView, setCalendarView, currentDate, navigat
     );
 };
 
-const BookingForm = ({ formData, handleInputChange, handleSubmit, isEdit, isFull, usersInCurrentSlot, errors = {}, errorMessage = '' }) => {
+const BookingForm = ({ formData, handleInputChange, handleSubmit, isEdit, isFull, usersInCurrentSlot, errors = {}, errorMessage = '', onDeleteClick }) => {
     return (
         <form onSubmit={handleSubmit} className="w-full">
             {errorMessage && (
@@ -474,9 +474,29 @@ const BookingForm = ({ formData, handleInputChange, handleSubmit, isEdit, isFull
                 </div>
             </div>
 
-            <Button className="w-full shadow-lg shadow-slate-900/20" disabled={isFull && !isEdit}>
-                {isEdit ? "Update Booking" : "Confirm Booking"}
-            </Button>
+            {isEdit ? (
+                <div className="flex gap-3">
+                    <Button 
+                        type="button"
+                        onClick={onDeleteClick}
+                        variant="danger"
+                        className="flex-1 shadow-lg shadow-red-900/10"
+                    >
+                        <Trash2 size={16} /> Delete
+                    </Button>
+                    <Button 
+                        type="submit"
+                        className="flex-1 shadow-lg shadow-slate-900/20" 
+                        disabled={isFull && !isEdit}
+                    >
+                        Update Booking
+                    </Button>
+                </div>
+            ) : (
+                <Button className="w-full shadow-lg shadow-slate-900/20" disabled={isFull && !isEdit}>
+                    Confirm Booking
+                </Button>
+            )}
         </form>
     );
 };
@@ -600,7 +620,6 @@ const AdminView = ({ registrations, handleEditClick, handleDelete }) => {
                                 </div>
                                 <div className="flex gap-2">
                                     <button onClick={() => handleEditClick(item)} className="p-2 bg-slate-50 text-blue-600 rounded-lg"><Edit2 size={14} /></button>
-                                    <button onClick={() => handleDelete(item.id)} className="p-2 bg-slate-50 text-red-600 rounded-lg"><Trash2 size={14} /></button>
                                 </div>
                             </div>
                             <div className="flex gap-2 text-xs font-bold text-slate-600 bg-slate-50 p-2 rounded-lg">
@@ -642,7 +661,6 @@ const AdminView = ({ registrations, handleEditClick, handleDelete }) => {
                                 <td className="py-5 px-8 text-right">
                                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
                                         <button onClick={() => handleEditClick(item)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 size={16} /></button>
-                                        <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button>
                                     </div>
                                 </td>
                             </tr>
@@ -676,6 +694,9 @@ export default function GymBookingApp() {
     const [calendarView, setCalendarView] = useState('month');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDayDetail, setSelectedDayDetail] = useState(null);
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState('');
+    const [deleteId, setDeleteId] = useState(null);
 
     // Firestore Real-time Listener
     useEffect(() => {
@@ -1066,16 +1087,40 @@ export default function GymBookingApp() {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Remove this booking?")) {
+    const handleDeleteClick = () => {
+        if (editingId) {
+            setDeleteId(editingId);
+            setIsDeleteConfirmOpen(true);
+            setDeleteConfirmText('');
+        }
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (deleteConfirmText.trim().toUpperCase() !== 'OK') {
+            alert('Vui lòng gõ "OK" để xác nhận xóa.');
+            return;
+        }
+
+        if (deleteId) {
             try {
-                await deleteDoc(doc(db, 'bookings', id));
+                await deleteDoc(doc(db, 'bookings', deleteId));
                 alert("Booking deleted successfully.");
+                setIsDeleteConfirmOpen(false);
+                setIsEditModalOpen(false);
+                setEditingId(null);
+                setDeleteId(null);
+                setDeleteConfirmText('');
             } catch (error) {
                 console.error('Error deleting booking:', error);
                 alert('Error deleting booking. Please try again.');
             }
         }
+    };
+
+    const handleDeleteCancel = () => {
+        setIsDeleteConfirmOpen(false);
+        setDeleteId(null);
+        setDeleteConfirmText('');
     };
 
 
@@ -1226,7 +1271,53 @@ export default function GymBookingApp() {
                     usersInCurrentSlot={usersInCurrentSlot}
                     errors={formErrors}
                     errorMessage={formErrorMessage}
+                    onDeleteClick={handleDeleteClick}
                 />
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={isDeleteConfirmOpen}
+                onClose={handleDeleteCancel}
+                title="Xác nhận xóa"
+            >
+                <div className="space-y-4">
+                    <p className="text-slate-700 font-medium">
+                        Bạn có chắc chắn muốn xóa booking này? Hành động này không thể hoàn tác.
+                    </p>
+                    <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-widest mb-2 ml-1 text-slate-400">
+                            Gõ "OK" để xác nhận xóa
+                        </label>
+                        <input
+                            type="text"
+                            value={deleteConfirmText}
+                            onChange={(e) => setDeleteConfirmText(e.target.value)}
+                            placeholder="Gõ OK..."
+                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 p-4 font-medium text-base focus:outline-none focus:bg-white focus:ring-1 focus:border-red-500 focus:ring-red-500 transition-all rounded-xl"
+                            autoFocus
+                        />
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                        <Button
+                            type="button"
+                            onClick={handleDeleteCancel}
+                            variant="secondary"
+                            className="flex-1"
+                        >
+                            Hủy
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={handleDeleteConfirm}
+                            variant="danger"
+                            className="flex-1"
+                            disabled={deleteConfirmText.trim().toUpperCase() !== 'OK'}
+                        >
+                            <Trash2 size={16} /> Xóa
+                        </Button>
+                    </div>
+                </div>
             </Modal>
 
             <style>{`
