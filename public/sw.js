@@ -1,5 +1,5 @@
-// Service Worker for Diageo PWA
-const CACHE_NAME = 'diageo-pwa-v1';
+// Service Worker for Fitness PWA
+const CACHE_NAME = 'fitness-pwa-v1';
 const urlsToCache = [
   '/',
   '/index.html',

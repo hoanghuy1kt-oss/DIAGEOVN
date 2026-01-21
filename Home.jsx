@@ -763,7 +763,7 @@ export default function GymBookingApp() {
     // --- PWA SETUP ---
     useEffect(() => {
         // 1. Set Document Title
-        document.title = "Diageo";
+        document.title = "Fitness";
 
         // 2. Register Service Worker
         if ('serviceWorker' in navigator) {
@@ -799,7 +799,7 @@ export default function GymBookingApp() {
         const metaTags = [
             { name: 'apple-mobile-web-app-capable', content: 'yes' },
             { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
-            { name: 'apple-mobile-web-app-title', content: 'Diageo' },
+            { name: 'apple-mobile-web-app-title', content: 'Fitness' },
             { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0' }
         ];
 
@@ -1103,7 +1103,7 @@ export default function GymBookingApp() {
             {/* INTERNAL USE BANNER - Highlighted */}
             <div className="bg-red-600 text-white text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] py-2 text-center flex items-center justify-center gap-2 sticky top-0 z-50 shadow-md">
                 <Lock size={12} className="animate-pulse" />
-                <span>Diageo Internal Use Only</span>
+                <span>Fitness Internal Use Only</span>
             </div>
 
             {/* Navbar */}
@@ -1111,7 +1111,7 @@ export default function GymBookingApp() {
                 <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex justify-between items-center">
                     <div className="flex flex-col cursor-pointer" onClick={() => setActiveTab('booking')}>
                         <div className="bg-white p-2 rounded-lg flex items-center justify-center shadow-sm">
-                            <img src="/Logo JW.png" alt="Diageo Logo" className="h-8 md:h-10 w-auto" style={{ backgroundColor: '#ffffff', padding: '4px', borderRadius: '4px' }} />
+                            <img src="/Logo JW.png" alt="Fitness Logo" className="h-8 md:h-10 w-auto" style={{ backgroundColor: '#ffffff', padding: '4px', borderRadius: '4px' }} />
                         </div>
                     </div>
 
@@ -1151,7 +1151,7 @@ export default function GymBookingApp() {
                                 at GT Fitness Center
                             </p>
                             <p className="text-slate-500 font-medium text-xs md:text-sm max-w-lg mx-auto leading-relaxed">
-                                All members in Diageo can use this membership card with maximum access 2 person/time
+                                All members in Fitness can use this membership card with maximum access 2 person/time
                             </p>
                         </div>
 
