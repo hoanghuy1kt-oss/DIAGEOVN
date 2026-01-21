@@ -1146,7 +1146,7 @@ export default function GymBookingApp() {
                     <div className="flex flex-col items-center animate-slideUp">
                         {/* Hero */}
                         <div className="text-center mb-8 md:mb-12 px-2">
-                            <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-2 md:mb-3 tracking-tight leading-tight">Gym Registration Form</h1>
+                            <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-2 md:mb-3 tracking-tight leading-tight">Registration Form</h1>
                             <p className="text-slate-500 font-medium text-sm md:text-base mb-3 md:mb-4">
                                 at GT Fitness Center
                             </p>
