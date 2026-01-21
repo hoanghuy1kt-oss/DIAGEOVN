@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/((?!manifest.json|sw.js).*)",
+      "source": "/((?!.*\\..{2,4}$).*)",
       "destination": "/index.html"
     }
   ],
@@ -11,7 +11,7 @@
       "headers": [
         {
           "key": "Content-Type",
-          "value": "application/manifest+json"
+          "value": "application/manifest+json; charset=utf-8"
         }
       ]
     },
@@ -20,7 +20,7 @@
       "headers": [
         {
           "key": "Content-Type",
-          "value": "application/javascript"
+          "value": "application/javascript; charset=utf-8"
         },
         {
           "key": "Service-Worker-Allowed",
