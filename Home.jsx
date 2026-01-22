@@ -968,24 +968,32 @@ export default function GymBookingApp() {
         }
     };
 
-    // Load saved draft on mount
+    // Load saved draft on mount (only name and team)
     useEffect(() => {
         const savedDraft = localStorage.getItem('bookingDraft');
         if (savedDraft) {
             try {
                 const parsed = JSON.parse(savedDraft);
-                // Only restore if it's not too old (optional, but good practice)? For now just restore.
-                setFormData(prev => ({ ...prev, ...parsed }));
+                // Only restore name and team, not date and slot
+                setFormData(prev => ({ 
+                    ...prev, 
+                    name: parsed.name || '',
+                    team: parsed.team || ''
+                }));
             } catch (e) {
                 console.error("Failed to load draft", e);
             }
         }
     }, []);
 
-    // Save draft on change
+    // Save draft on change (only name and team)
     useEffect(() => {
-        localStorage.setItem('bookingDraft', JSON.stringify(formData));
-    }, [formData]);
+        const draftToSave = {
+            name: formData.name,
+            team: formData.team
+        };
+        localStorage.setItem('bookingDraft', JSON.stringify(draftToSave));
+    }, [formData.name, formData.team]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
