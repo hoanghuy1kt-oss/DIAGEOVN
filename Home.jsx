@@ -12,12 +12,40 @@ import {
 } from 'firebase/firestore';
 
 // --- CONSTANTS ---
-const TIME_SLOTS = [
-    "08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00",
+// Thời gian đăng ký theo hình: T2–T6 07:00–20:00, T7 07:00–14:00, CN & ngày lễ đóng cửa
+const WEEKDAY_SLOTS = [
+    "07:00 - 08:00", "08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00",
     "12:00 - 13:00", "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00",
-    "16:00 - 17:00", "17:00 - 18:00", "18:00 - 19:00", "19:00 - 20:00",
-    "20:00 - 21:00", "21:00 - 22:00"
+    "16:00 - 17:00", "17:00 - 18:00", "18:00 - 19:00", "19:00 - 20:00"
 ];
+const SATURDAY_SLOTS = [
+    "07:00 - 08:00", "08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00",
+    "12:00 - 13:00", "13:00 - 14:00"
+];
+const ALL_SLOTS = [...WEEKDAY_SLOTS]; // dùng cho admin filter (T2–T6 là superset)
+
+// Ngày lễ (YYYY-MM-DD). Bổ sung thêm nếu cần.
+const PUBLIC_HOLIDAYS = [
+    "2025-01-01", "2025-04-30", "2025-05-01", "2025-09-02",
+    "2026-01-01", "2026-04-30", "2026-05-01", "2026-09-02"
+];
+
+function getDayOfWeek(dateStr) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d).getDay(); // 0 = Sun, 6 = Sat
+}
+
+function isClosedDay(dateStr) {
+    if (!dateStr) return true;
+    if (PUBLIC_HOLIDAYS.includes(dateStr)) return true;
+    return getDayOfWeek(dateStr) === 0; // Chủ nhật
+}
+
+function getSlotsForDate(dateStr) {
+    if (!dateStr || isClosedDay(dateStr)) return [];
+    const dow = getDayOfWeek(dateStr);
+    return dow === 6 ? SATURDAY_SLOTS : WEEKDAY_SLOTS;
+}
 
 
 // --- SHARED COMPONENTS ---
@@ -381,12 +409,17 @@ const CalendarComponent = ({ calendarView, setCalendarView, currentDate, navigat
     );
 };
 
-const BookingForm = ({ formData, handleInputChange, handleSubmit, isEdit, isFull, usersInCurrentSlot, errors = {}, errorMessage = '' }) => {
+const BookingForm = ({ formData, handleInputChange, handleSubmit, isEdit, isFull, usersInCurrentSlot, availableSlots = [], isClosed = false, errors = {}, errorMessage = '' }) => {
     return (
         <form onSubmit={handleSubmit} className="w-full">
             {errorMessage && (
                 <div className="mb-4 p-4 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm font-semibold">
                     {errorMessage}
+                </div>
+            )}
+            {isClosed && formData.date && (
+                <div className="mb-4 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 text-sm font-semibold">
+                    Closed on Sundays and Public Holidays. Please choose another date.
                 </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -424,7 +457,7 @@ const BookingForm = ({ formData, handleInputChange, handleSubmit, isEdit, isFull
                         name="slot"
                         value={formData.slot}
                         onChange={handleInputChange}
-                        options={TIME_SLOTS}
+                        options={isClosed ? [] : availableSlots}
                         required
                         error={errors.slot}
                     />
@@ -481,6 +514,8 @@ const BookingForm = ({ formData, handleInputChange, handleSubmit, isEdit, isFull
                                     <span className="text-xs text-slate-500 block mt-1">Slot is currently empty.</span>
                                 )}
                             </div>
+                        ) : isClosed && formData.date ? (
+                            <span className="text-amber-600 text-xs font-semibold">Closed on this day. Please select another date.</span>
                         ) : (
                             <div className="text-xs text-slate-400 italic">Select date & time to view status</div>
                         )}
@@ -488,7 +523,7 @@ const BookingForm = ({ formData, handleInputChange, handleSubmit, isEdit, isFull
                 </div>
             </div>
 
-            <Button className="w-full shadow-lg shadow-slate-900/20" disabled={isFull && !isEdit}>
+            <Button className="w-full shadow-lg shadow-slate-900/20" disabled={(isFull && !isEdit) || (isClosed && !isEdit)}>
                 {isEdit ? "Update Booking" : "Confirm Booking"}
             </Button>
         </form>
@@ -507,11 +542,11 @@ const AdminView = ({ registrations, handleEditClick }) => {
     const sortByNewestSubmit = (a, b) => {
         const ca = a.createdAt || '';
         const cb = b.createdAt || '';
-        if (ca && cb) return cb.localeCompare(ca); // newest first
+        if (ca && cb) return cb.localeCompare(ca);
         if (cb || ca) return cb ? -1 : 1;
         const dateCompare = b.date.localeCompare(a.date);
         if (dateCompare !== 0) return dateCompare;
-        return a.slot.localeCompare(b.slot);
+        return (a.slot || '').localeCompare(b.slot || '');
     };
 
     const filteredRegistrations = registrations.filter(item => {
@@ -579,7 +614,7 @@ const AdminView = ({ registrations, handleEditClick }) => {
                                 className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-slate-900 transition-colors text-slate-600 appearance-none"
                             >
                                 <option value="">All Sessions</option>
-                                {TIME_SLOTS.map(slot => (
+                                {ALL_SLOTS.map(slot => (
                                     <option key={slot} value={slot}>{slot}</option>
                                 ))}
                             </select>
@@ -724,12 +759,13 @@ export default function GymBookingApp() {
                     const bookings = snapshot.docs.map(doc => {
                         const data = doc.data();
                         console.log("📋 Document ID:", doc.id, "Data:", data);
+                        const slot = (data.slot || '').replace(/\s*–\s*/g, ' - ');
                         return {
                             id: doc.id,
                             name: data.name || '',
                             team: data.team || '',
                             date: data.date || '',
-                            slot: data.slot || '',
+                            slot,
                             createdAt: data.createdAt || '',
                             updatedAt: data.updatedAt || ''
                         };
@@ -954,8 +990,15 @@ export default function GymBookingApp() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-        // Clear error when user starts typing
+        setFormData(prev => {
+            const next = { ...prev, [name]: value };
+            if (name === 'date') {
+                const slots = getSlotsForDate(value);
+                const currentSlot = prev.slot;
+                if (!currentSlot || !slots.includes(currentSlot)) next.slot = '';
+            }
+            return next;
+        });
         if (formErrors[name]) {
             setFormErrors(prev => {
                 const newErrors = { ...prev };
@@ -963,9 +1006,7 @@ export default function GymBookingApp() {
                 return newErrors;
             });
         }
-        if (formErrorMessage) {
-            setFormErrorMessage('');
-        }
+        if (formErrorMessage) setFormErrorMessage('');
     };
 
     // Load saved draft on mount (only name and team)
@@ -1043,6 +1084,10 @@ export default function GymBookingApp() {
             return;
         }
 
+        if (isClosedDay(formData.date)) {
+            setFormErrorMessage('Closed on Sundays and Public Holidays. Please choose another date.');
+            return;
+        }
         if (isSlotFull(formData.date, formData.slot)) {
             alert("Slot is full. Please choose another time.");
             return;
@@ -1128,13 +1173,14 @@ export default function GymBookingApp() {
 
     const handleEditClick = (item) => {
         setEditingId(item.id);
+        const slot = (item.slot || '').replace(/\s*–\s*/g, ' - ');
         setFormData({
             name: item.name,
             team: item.team,
             date: item.date,
-            slot: item.slot
+            slot
         });
-        setFormErrors({}); // Clear errors when opening edit modal
+        setFormErrors({});
         setIsEditModalOpen(true);
     };
 
@@ -1149,7 +1195,8 @@ export default function GymBookingApp() {
         setCurrentDate(newDate);
     };
 
-    // Derive state for form display
+    const availableSlots = getSlotsForDate(formData.date);
+    const isClosed = formData.date ? isClosedDay(formData.date) : false;
     const isFull = !editingId && formData.date && formData.slot && isSlotFull(formData.date, formData.slot);
     const usersInCurrentSlot = formData.date && formData.slot ? getUsersInSlot(formData.date, formData.slot) : [];
 
@@ -1200,14 +1247,31 @@ export default function GymBookingApp() {
                 {activeTab === 'booking' ? (
                     <div className="flex flex-col items-center animate-slideUp">
                         {/* Hero */}
-                        <div className="text-center mb-8 md:mb-12 px-2">
+                        <div className="text-center mb-6 md:mb-10 px-2">
                             <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-2 md:mb-3 tracking-tight leading-tight">Gym Registration Form</h1>
                             <p className="text-slate-500 font-medium text-sm md:text-base mb-3 md:mb-4">
                                 at GT Fitness Center
                             </p>
-                            <p className="text-slate-500 font-medium text-xs md:text-sm max-w-lg mx-auto leading-relaxed">
+                            <p className="text-slate-500 font-medium text-xs md:text-sm max-w-lg mx-auto leading-relaxed mb-6">
                                 All members in Diageo can use this membership card with maximum access 2 person/time
                             </p>
+                            <div className="inline-block text-left bg-white rounded-xl border border-slate-100 shadow-sm px-5 py-4 md:px-6 md:py-5">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Registration hours</p>
+                                <ul className="space-y-2 text-sm md:text-base text-slate-700 font-medium">
+                                    <li className="flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+                                        <span><span className="text-blue-600 underline">Monday to Friday</span> <span className="text-blue-600 underline">07:00 – 20:00</span></span>
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+                                        <span><span className="text-blue-600 underline">Saturday</span> <span className="text-blue-600 underline">07:00 – 14:00</span></span>
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+                                        <span>Closed on Sundays and Public Holidays</span>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
 
                         {/* Booking Card */}
@@ -1225,6 +1289,8 @@ export default function GymBookingApp() {
                                     isEdit={false}
                                     isFull={isFull}
                                     usersInCurrentSlot={usersInCurrentSlot}
+                                    availableSlots={availableSlots}
+                                    isClosed={isClosed}
                                     errors={formErrors}
                                     errorMessage={formErrorMessage}
                                 />
@@ -1269,8 +1335,10 @@ export default function GymBookingApp() {
                     handleInputChange={handleInputChange}
                     handleSubmit={handleSubmit}
                     isEdit={true}
-                    isFull={false} // Editing mode doesn't block submit on full (except logic handled in submit)
+                    isFull={false}
                     usersInCurrentSlot={usersInCurrentSlot}
+                    availableSlots={availableSlots}
+                    isClosed={isClosed}
                     errors={formErrors}
                     errorMessage={formErrorMessage}
                 />
