@@ -24,10 +24,12 @@ const SATURDAY_SLOTS = [
 ];
 const ALL_SLOTS = [...WEEKDAY_SLOTS]; // dùng cho admin filter (T2–T6 là superset)
 
-// Ngày lễ (YYYY-MM-DD). Bổ sung thêm nếu cần.
+// Ngày lễ (MM-DD, không cần năm vì lặp lại hàng năm)
 const PUBLIC_HOLIDAYS = [
-    "2025-01-01", "2025-04-30", "2025-05-01", "2025-09-02",
-    "2026-01-01", "2026-04-30", "2026-05-01", "2026-09-02"
+    "01-01", // Tết Dương lịch
+    "04-30", // Ngày Giải phóng miền Nam
+    "05-01", // Ngày Quốc tế Lao động
+    "09-02"  // Quốc khánh
 ];
 
 function getDayOfWeek(dateStr) {
@@ -37,7 +39,9 @@ function getDayOfWeek(dateStr) {
 
 function isClosedDay(dateStr) {
     if (!dateStr) return true;
-    if (PUBLIC_HOLIDAYS.includes(dateStr)) return true;
+    // Extract MM-DD từ YYYY-MM-DD
+    const monthDay = dateStr.substring(5); // "01-01" từ "2025-01-01"
+    if (PUBLIC_HOLIDAYS.includes(monthDay)) return true;
     return getDayOfWeek(dateStr) === 0; // Chủ nhật
 }
 
