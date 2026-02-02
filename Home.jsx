@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, ChevronLeft, ChevronRight, Trash2, Edit2, Zap, User, Clock, Check, X, Shield, Activity, Lock, Users, Menu, Search, Filter, Download } from 'lucide-react';
 import { db } from './firebase';
+import wellnessCalendarImg from './Wellness Calendar.jpg';
 import {
     collection,
     addDoc,
@@ -1259,22 +1260,8 @@ export default function GymBookingApp() {
                             <p className="text-slate-500 font-medium text-xs md:text-sm max-w-lg mx-auto leading-relaxed mb-6">
                                 All members in Diageo can use this membership card with maximum access 2 person/time
                             </p>
-                            <div className="inline-block text-left bg-white rounded-xl border border-slate-100 shadow-sm px-5 py-4 md:px-6 md:py-5">
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Registration hours</p>
-                                <ul className="space-y-2 text-sm md:text-base text-slate-700 font-medium">
-                                    <li className="flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
-                                        <span><span className="text-blue-600 underline">Monday to Friday</span> <span className="text-blue-600 underline">07:00 – 20:00</span></span>
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
-                                        <span><span className="text-blue-600 underline">Saturday</span> <span className="text-blue-600 underline">07:00 – 14:00</span></span>
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
-                                        <span>Closed on Sundays and Public Holidays</span>
-                                    </li>
-                                </ul>
+                            <div className="mb-6 rounded-xl overflow-hidden border border-slate-100 shadow-sm max-w-2xl mx-auto">
+                                <img src={wellnessCalendarImg} alt="Wellness Calendar" className="w-full h-auto object-contain" />
                             </div>
                         </div>
 
